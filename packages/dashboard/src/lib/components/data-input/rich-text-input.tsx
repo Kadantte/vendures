@@ -1,11 +1,11 @@
 import { DashboardFormComponentProps } from '@/vdb/framework/form-engine/form-engine-types.js';
+import { isReadonlyField } from '@/vdb/framework/form-engine/utils.js';
 import TextStyle from '@tiptap/extension-text-style';
 import { BubbleMenu, Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { BoldIcon, ItalicIcon, StrikethroughIcon } from 'lucide-react';
 import { useLayoutEffect, useRef } from 'react';
 import { Button } from '../ui/button.js';
-import { isReadonlyField } from '@/vdb/framework/form-engine/utils.js';
 
 // define your extension array
 const extensions = [
@@ -22,6 +22,13 @@ const extensions = [
     }),
 ];
 
+/**
+ * @description
+ * A component for displaying a rich text editor. Internally uses ProseMirror (rich text editor) under the hood.
+ *
+ * @docsCategory form-components
+ * @docsPage RichTextInput
+ */
 export function RichTextInput({ value, onChange, fieldDef }: Readonly<DashboardFormComponentProps>) {
     const readOnly = isReadonlyField(fieldDef);
     const isInternalUpdate = useRef(false);
@@ -32,11 +39,15 @@ export function RichTextInput({ value, onChange, fieldDef }: Readonly<DashboardF
         },
         extensions: extensions,
         content: value,
-        editable: !readOnly,    
+        editable: !readOnly,
         onUpdate: ({ editor }) => {
             if (!readOnly) {
                 isInternalUpdate.current = true;
-                onChange(editor.getHTML());
+                console.log('onUpdate');
+                const newValue = editor.getHTML();
+                if (value !== newValue) {
+                    onChange(newValue);
+                }
             }
         },
         editorProps: {
@@ -61,7 +72,7 @@ export function RichTextInput({ value, onChange, fieldDef }: Readonly<DashboardF
     // Update editor's editable state when disabled prop changes
     useLayoutEffect(() => {
         if (editor) {
-            editor.setEditable(!readOnly);
+            editor.setEditable(!readOnly, false);
         }
     }, [readOnly, editor]);
 
